@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"syscall"
+	"time"
 )
 
 type RusageJson struct {
@@ -25,6 +26,7 @@ type RecordJson struct {
 	Stdout string             `json:"stdout"`
 	Stderr string             `json:"stderr"`
 	Status syscall.WaitStatus `json:"status"`
+	Rtime  int64              `json:"rtime"`
 	Rusage RusageJson         `json:"rusage"`
 }
 
@@ -32,6 +34,7 @@ func main() {
 	cmd := exec.Command(os.Args[1], os.Args[2:]...)
 	stdout, _ := cmd.StdoutPipe()
 	stderr, _ := cmd.StderrPipe()
+	start := time.Now().UnixNano()
 	if err := cmd.Start(); err != nil {
 		panic(err)
 	}
@@ -48,12 +51,14 @@ func main() {
 			exitErr.Sys()
 		}
 	}
+	end := time.Now().UnixNano()
 	status := cmd.ProcessState.Sys().(syscall.WaitStatus)
 	rusage := cmd.ProcessState.SysUsage().(*syscall.Rusage)
 	record := RecordJson{
 		string(recStdout),
 		string(recStderr),
 		status,
+		(end - start) / 1000, // micro second
 		RusageJson{
 			rusage.Utime.Usec,
 			rusage.Stime.Usec,
