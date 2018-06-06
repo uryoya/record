@@ -46,9 +46,7 @@ func runCommand(name string, args ...string) (*RecordJson, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := cmd.Wait(); err != nil {
-		return nil, err
-	}
+	cmd.Wait()
 	end := time.Now().UnixNano()
 	status := cmd.ProcessState.Sys().(syscall.WaitStatus)
 	rusage := cmd.ProcessState.SysUsage().(*syscall.Rusage)
