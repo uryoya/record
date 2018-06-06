@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"os/exec"
 	"syscall"
 )
@@ -28,7 +29,7 @@ type RecordJson struct {
 }
 
 func main() {
-	cmd := exec.Command("ls", "-la")
+	cmd := exec.Command(os.Args[1], os.Args[2:]...)
 	stdout, _ := cmd.StdoutPipe()
 	stderr, _ := cmd.StderrPipe()
 	if err := cmd.Start(); err != nil {
