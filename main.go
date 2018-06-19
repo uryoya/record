@@ -30,6 +30,20 @@ type RecordJson struct {
 	Rusage RusageJson         `json:"rusage"`
 }
 
+func rusageToRusageJson(rusage *syscall.Rusage) RusageJson {
+	return RusageJson{
+		rusage.Utime.Usec,
+		rusage.Stime.Usec,
+		rusage.Maxrss,
+		rusage.Minflt,
+		rusage.Majflt,
+		rusage.Inblock,
+		rusage.Oublock,
+		rusage.Nvcsw,
+		rusage.Nivcsw,
+	}
+}
+
 func runCommand(name string, args ...string) (*RecordJson, error) {
 	cmd := exec.Command(name, args...)
 	stdout, _ := cmd.StdoutPipe()
@@ -55,17 +69,7 @@ func runCommand(name string, args ...string) (*RecordJson, error) {
 		string(recStderr),
 		status,
 		(end - start) / 1000, // micro second
-		RusageJson{
-			rusage.Utime.Usec,
-			rusage.Stime.Usec,
-			rusage.Maxrss,
-			rusage.Minflt,
-			rusage.Majflt,
-			rusage.Inblock,
-			rusage.Oublock,
-			rusage.Nvcsw,
-			rusage.Nivcsw,
-		},
+		rusageToRusageJson(rusage),
 	}
 	return &record, nil
 }
